@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายการถอนเงิน Dynamic (Height 365px)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* ================================== */
+        /* CSS หลัก: การแสดงผลและการซ่อน Scroll Bar */
+        /* ================================== */
+        body {
+            /* พื้นหลังสีดำ */
+            background-color: #000000; 
+            /* สั่งซ่อน Scroll Bar ของหน้าเว็บหลัก */
+            overflow: hidden; 
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh;
+        }
+
+        .transaction-container {
+            /* 🚩 จุดสำคัญ: สั่งซ่อน Scroll Bar ภายใน */
+            overflow-y: hidden; 
+            
+            border-radius: 12px;
+            padding: 10px;
+            
+            max-width: 100%;
+            /* 🚩 แก้ไขความสูงสูงสุดเป็น 365px */
+            max-height: 365px; 
+            box-sizing: border-box;
+        }
+
+        /* Responsive Size */
+        @media (max-width: 575px) {
+            .transaction-container { 
+                width: 398px; 
+                /* แก้ไขความสูงเป็น 365px */
+                height: 365px; 
+            }
+        }
+        @media (min-width: 576px) {
+            .transaction-container { 
+                width: 568px; 
+                /* แก้ไขความสูงเป็น 365px */
+                height: 365px; 
+            }
+        }
+        
+        /* สไตล์รายการ (คงเดิม) */
+        .transaction-card {
+            background: linear-gradient(180deg, #2a2210 0%, #1a150a 100%);
+            border: 1px solid #ffcc00;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 0 5px rgba(255, 204, 0, 0.3), inset 0 0 10px rgba(255, 204, 0, 0.1);
+        }
+
+        .card-left { display: flex; align-items: center; gap: 12px; }
+
+        .bank-info { 
+            display: flex; justify-content: center; align-items: center; 
+            border: 2px solid #ffd700; border-radius: 10px; padding: 1px;
+            box-shadow: 0 0 5px #ffd700; width: 45px; height: 45px;
+        }
+        
+        .bank-logo {
+            width: 35px; height: 35px; margin: 0;
+            border-radius: 50%; display: inline-block;
+            background-size: cover; background-position: center; background-repeat: no-repeat;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* URL รูปโลโก้ */
+        .krungsri .bank-logo { background-image: url('https://s6.gifyu.com/images/bbobv.png'); }
+        .scb .bank-logo { background-image: url('https://s6.gifyu.com/images/bbobm.png'); }
+        .gsb .bank-logo { background-image: url('https://s6.gifyu.com/images/bbobE.png'); }
+        .kbank .bank-logo { background-image: url('https://s6.gifyu.com/images/bbopu.png'); }
+        .bbl .bank-logo { background-image: url('https://s6.gifyu.com/images/bbobk.png'); }
+        .ktb .bank-logo { background-image: url('https://s6.gifyu.com/images/bbobh.png'); }
+        .ttb .bank-logo { background-image: url('https://s6.gifyu.com/images/bbobq.png'); }
+
+
+        /* รายละเอียดข้อความ */
+        .details { display: flex; flex-direction: column; gap: 3px; }
+        .user-id { color: #ffcc99; font-size: 14px; font-weight: bold; }
+        .amount { color: #ffAA00; font-size: 14px; font-weight: bold; }
+        .date { color: #ccc; font-size: 11px; }
+
+        /* ส่วนขวา: สถานะ */
+        .card-right { display: flex; align-items: center; gap: 5px; }
+        .status-text { color: white; font-size: 13px; }
+
+        .check-icon {
+            color: #ffcc00; font-size: 14px; background-color: rgba(255, 204, 0, 0.2);
+            border-radius: 50%; padding: 3px; width: 16px; height: 16px;
+            display: flex; justify-content: center; align-items: center;
+            transition: background-color 0.5s; 
+        }
+        
+        /* สไตล์ไอคอนตอนเป็น Loading */
+        #top-icon i.fa-spinner { color: #ffcc00; }
+    </style>
+</head>
+<body>
+
+    <div class="transaction-container" id="transactionList">
+        
+        <div class="transaction-card">
+            <div class="card-left">
+                <div class="bank-info"><div class="bank-logo"></div></div>
+                <div class="details">
+                    <div class="user-id random-id">...</div>
+                    <div class="amount format-amount" data-raw-amount="0.00">...</div>
+                    <div class="date transaction-time" data-stagger-minutes="0">...</div> 
+                </div>
+            </div>
+            <div class="card-right">
+                <div class="check-icon" id="top-icon"><i class="fas fa-check"></i></div> 
+                <div class="status-text" id="top-status">โอนแล้ว</div>
+            </div>
+        </div>
+
+        <div class="transaction-card">
+            <div class="card-left">
+                <div class="bank-info"><div class="bank-logo"></div></div>
+                <div class="details">
+                    <div class="user-id random-id">...</div>
+                    <div class="amount format-amount" data-raw-amount="0.00">...</div>
+                    <div class="date transaction-time" data-stagger-minutes="2">...</div>
+                </div>
+            </div>
+            <div class="card-right">
+                <div class="check-icon"><i class="fas fa-check"></i></div>
+                <div class="status-text">โอนแล้ว</div>
+            </div>
+        </div>
+
+        <div class="transaction-card">
+            <div class="card-left">
+                <div class="bank-info"><div class="bank-logo"></div></div>
+                <div class="details">
+                    <div class="user-id random-id">...</div>
+                    <div class="amount format-amount" data-raw-amount="0.00"></div>
+                    <div class="date transaction-time" data-stagger-minutes="5">...</div>
+                </div>
+            </div>
+            <div class="card-right">
+                <div class="check-icon"><i class="fas fa-check"></i></div>
+                <div class="status-text">โอนแล้ว</div>
+            </div>
+        </div>
+
+        <div class="transaction-card">
+            <div class="card-left">
+                <div class="bank-info"><div class="bank-logo"></div></div>
+                <div class="details">
+                    <div class="user-id random-id">...</div>
+                    <div class="amount format-amount" data-raw-amount="0.00"></div>
+                    <div class="date transaction-time" data-stagger-minutes="10">...</div>
+                </div>
+            </div>
+            <div class="card-right">
+                <div class="check-icon"><i class="fas fa-check"></i></div>
+                <div class="status-text">โอนแล้ว</div>
+            </div>
+        </div>
+        
+        <div class="transaction-card">
+            <div class="card-left">
+                <div class="bank-info"><div class="bank-logo"></div></div>
+                <div class="details">
+                    <div class="user-id random-id">...</div>
+                    <div class="amount format-amount" data-raw-amount="0.00"></div>
+                    <div class="date transaction-time" data-stagger-minutes="12">...</div>
+                </div>
+            </div>
+            <div class="card-right">
+                <div class="check-icon"><i class="fas fa-check"></i></div>
+                <div class="status-text">โอนแล้ว</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // โค้ด JavaScript สำหรับการอัปเดตข้อมูล (คงเดิม)
+        const bankClasses = ['krungsri', 'scb', 'gsb', 'kbank', 'bbl', 'ktb', 'ttb'];
+
+        function generatePhoneNumber() {
+            const prefixes = ['06', '08', '09'];
+            const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+            let middle = Math.floor(Math.random() * 100000).toString().padStart(5, '0');
+            const suffix = 'XXX';
+            return `ยูส: ${prefix}${middle}${suffix}`;
+        }
+
+        function generateRandomAmount() {
+            const integerPart = Math.floor(Math.random() * 9900) + 100;
+            const decimalPart = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+            return `${integerPart}.${decimalPart}`;
+        }
+        
+        function formatDisplay(el) {
+            const rawAmount = parseFloat(el.dataset.rawAmount);
+            if (!isNaN(rawAmount)) {
+                const formatted = rawAmount.toLocaleString('en-US', { 
+                    minimumFractionDigits: 2, 
+                    maximumFractionDigits: 2 
+                });
+                el.textContent = `ยอดถอน: ${formatted} บาท`;
+            }
+        }
+
+        function updateTimeDisplay(el) {
+            const staggerMinutes = parseInt(el.dataset.staggerMinutes) || 0;
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - staggerMinutes);
+
+            const options = {
+                year: 'numeric', month: 'short', day: '2-digit', 
+                hour: '2-digit', minute: '2-digit', second: '2-digit', 
+                hour12: false, timeZone: 'Asia/Bangkok'
+            };
+
+            let dateString = now.toLocaleDateString('th-TH', options);
+            dateString = dateString.replace(/,/g, '').trim(); 
+            
+            el.textContent = `วันที่: ${dateString}`;
+        }
+        
+        function updateTopItemStatusToTransferring() {
+            const statusEl = document.getElementById('top-status');
+            const iconEl = document.getElementById('top-icon');
+
+            if (statusEl) statusEl.textContent = 'กำลังโอน';
+            if (iconEl) {
+                iconEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; 
+                iconEl.style.backgroundColor = 'rgba(255, 204, 0, 0.4)'; 
+            }
+        }
+
+        function updateTopItemStatusToTransferred() {
+            const statusEl = document.getElementById('top-status');
+            const iconEl = document.getElementById('top-icon');
+            
+            if (statusEl) statusEl.textContent = 'โอนแล้ว';
+            if (iconEl) {
+                iconEl.innerHTML = '<i class="fas fa-check"></i>'; 
+                iconEl.style.backgroundColor = 'rgba(255, 204, 0, 0.2)'; 
+            }
+        }
+
+        function updateTopItem() {
+            const topCard = document.querySelector('.transaction-card:first-child');
+            if (!topCard) return;
+
+            topCard.querySelector('.format-amount').dataset.rawAmount = generateRandomAmount();
+            topCard.querySelector('.random-id').textContent = generatePhoneNumber();
+
+            const bankInfo = topCard.querySelector('.bank-info');
+            bankClasses.forEach(c => bankInfo.classList.remove(c)); 
+            const randomClass = bankClasses[Math.floor(Math.random() * bankClasses.length)];
+            bankInfo.classList.add(randomClass);
+
+            formatDisplay(topCard.querySelector('.format-amount')); 
+            updateTimeDisplay(topCard.querySelector('.transaction-time'));
+            
+            updateTopItemStatusToTransferring(); 
+            setTimeout(updateTopItemStatusToTransferred, 1000); 
+        }
+        
+        function updateNonTopItems() {
+            const nonTopCards = document.querySelectorAll('.transaction-card:not(:first-child)');
+            
+            nonTopCards.forEach(card => {
+                card.querySelector('.format-amount').dataset.rawAmount = generateRandomAmount();
+                card.querySelector('.random-id').textContent = generatePhoneNumber();
+                
+                const bankInfo = card.querySelector('.bank-info');
+                bankClasses.forEach(c => bankInfo.classList.remove(c)); 
+                const randomClass = bankClasses[Math.floor(Math.random() * bankClasses.length)];
+                bankInfo.classList.add(randomClass);
+
+                formatDisplay(card.querySelector('.format-amount'));
+                updateTimeDisplay(card.querySelector('.transaction-time'));
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateTopItem(); 
+            updateNonTopItems();
+
+            setInterval(updateTopItem, 2000); 
+            setInterval(updateNonTopItems, 1500); 
+        });
+    </script>
+
+</body>
+</html>
